@@ -1,46 +1,83 @@
-/************************************************************
- *                 GLOBAL VARIABLES & SETTINGS
- ************************************************************/
+// Global variables and settings
 const chartWidth = 600;
 const chartHeight = 400;
 const margin = { top: 30, right: 30, bottom: 50, left: 50 };
 
-let dataset = [];        // Will hold the loaded data
-let columns = [];        // Will store column names
-let orientation = 'vertical'; // Track bar/hist orientation
+let dataset = [];
+let columns = [];
+let orientation = 'vertical';
 
-/************************************************************
- *                 1. LOAD THE CSV DATA
- ************************************************************/
-// TODO: Replace 'path/to/yourdata.csv' with your actual CSV file path
-d3.csv('data/sample.csv').then(data => {
-    dataset = data;
+const COLORS = {
+    primary: '#3182ce',
+    secondary: '#68d391',
+    hover: '#2c5282',
+    background: '#f7fafc'
+};
 
-    // 1.1 Detect column names
-    columns = Object.keys(dataset[0]); // e.g., ["mpg", "horsepower", "brand", ...]
+// Initialize Dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChartActions();
+    // Load data
+    d3.csv('data/sample.csv')
+        .then(data => {
+            if (!data || data.length === 0) {
+                throw new Error('No data loaded');
+            }
+            dataset = data;
+            columns = Object.keys(dataset[0]);
+            
+            // Initialize UI
+            setupUIControls();
+            populateDropdowns();
+            attachEventListeners();
+            updateChart();
+        })
+        .catch(error => {
+            console.error('Error loading data:', error);
+            showErrorMessage('Failed to load data. Please check if data/sample.csv exists and is accessible.');
+        });
+});
 
-    // 1.2 Populate dropdown menus
-    populateDropdowns(columns);
+// UI Setup Functions
+function setupUIControls() {
+    const axesButton = document.getElementById('flipAxes');
+    const orientationButton = document.getElementById('flipOrientation');
+    
+    if (axesButton) {
+        axesButton.addEventListener('click', () => {
+            const firstVar = d3.select('#variableSelect').property('value');
+            const secondVar = d3.select('#secondVariableSelect').property('value');
+            
+            // Swap variables
+            d3.select('#variableSelect').property('value', secondVar);
+            d3.select('#secondVariableSelect').property('value', firstVar);
+            
+            updateChart();
+        });
+    }
 
-    // 1.3 Attach event listeners
-    attachEventListeners();
+    if (orientationButton) {
+        orientationButton.addEventListener('click', () => {
+            orientation = orientation === 'vertical' ? 'horizontal' : 'vertical';
+            updateChart();
+        });
+    }
 
-    // 1.4 Initial default chart
-    updateChart();
-})
-    .catch(error => {
-        console.error('Error loading the CSV file:', error);
-    });
+    // Add dropdown change listeners
+    d3.select('#variableSelect').on('change', updateChart);
+    d3.select('#secondVariableSelect').on('change', updateChart);
+}
 
-/************************************************************
- *                 2. POPULATE DROPDOWNS
- ************************************************************/
-function populateDropdowns(cols) {
+function populateDropdowns() {
     const variableSelect = d3.select('#variableSelect');
     const secondVariableSelect = d3.select('#secondVariableSelect');
 
-    // Add <option> elements for each column
-    cols.forEach(col => {
+    // Clear existing options
+    variableSelect.selectAll('option').remove();
+    secondVariableSelect.selectAll('option').remove();
+
+    // Add options for each column
+    columns.forEach(col => {
         variableSelect.append('option')
             .attr('value', col)
             .text(col);
@@ -49,362 +86,395 @@ function populateDropdowns(cols) {
             .attr('value', col)
             .text(col);
     });
-}
 
-/************************************************************
- *                 3. EVENT LISTENERS
- ************************************************************/
-function attachEventListeners() {
-    // Dropdown change → update chart
-    d3.select('#variableSelect').on('change', updateChart);
-    d3.select('#secondVariableSelect').on('change', updateChart);
-
-    // Radio buttons for scatter axis assignment
-    d3.selectAll('input[name="axisOption"]').on('change', updateChart);
-
-    // Orientation toggle for bar/hist
-    d3.select('#orientationToggle').on('click', () => {
-        orientation = (orientation === 'vertical') ? 'horizontal' : 'vertical';
-        updateChart();
-    });
-}
-
-/************************************************************
- *                 4. MAIN UPDATE CHART FUNCTION
- ************************************************************/
-function updateChart() {
-    // Remove any existing SVG
-    d3.select('#chart').selectAll('*').remove();
-
-    // Retrieve the currently selected variables
-    const selectedVar1 = d3.select('#variableSelect').property('value');
-    const selectedVar2 = d3.select('#secondVariableSelect').property('value');
-    const axisOption = d3.select('input[name="axisOption"]:checked').node().value;
-
-    // Detect data types
-    const var1Type = detectType(dataset, selectedVar1);
-    const var2Type = detectType(dataset, selectedVar2);
-
-    // Decide which chart to draw:
-    // 1) Both variables are numeric -> scatterplot
-    // 2) Var1 is numeric -> histogram
-    // 3) Var1 is categorical -> bar chart
-    // (We only check Var1 because Var2 is only relevant for scatterplot)
-
-    if (var1Type === 'numeric' && var2Type === 'numeric') {
-        drawScatterPlot(selectedVar1, selectedVar2, axisOption);
-    } else if (var1Type === 'numeric') {
-        drawHistogram(selectedVar1);
-    } else {
-        // default to bar chart for categorical
-        drawBarChart(selectedVar1);
+    // Set default selections
+    if (columns.length >= 2) {
+        secondVariableSelect.property('value', columns[1]);
     }
 }
 
-/************************************************************
- *                 5. TYPE DETECTION FUNCTION
- ************************************************************/
-function detectType(data, colName) {
-    // Simple heuristic: try to parseFloat for first ~10 values
-    // If majority are numbers, return 'numeric', else 'categorical'.
-    let numericCount = 0;
-    const sampleSize = Math.min(10, data.length);
+function attachEventListeners() {
+    // Dropdown change handlers
+    d3.select('#variableSelect').on('change', updateChart);
+    d3.select('#secondVariableSelect').on('change', updateChart);
+}
 
+// Chart Update Function
+function updateChart() {
+    if (!dataset || dataset.length === 0) {
+        showErrorMessage('No data available to display');
+        return;
+    }
+
+    const selectedVar1 = d3.select('#variableSelect').property('value');
+    const selectedVar2 = d3.select('#secondVariableSelect').property('value');
+
+    if (!selectedVar1 || !selectedVar2) {
+        showErrorMessage('Please select variables to display');
+        return;
+    }
+
+    // Clear existing chart
+    d3.select('#chart').selectAll('*').remove();
+
+    // Detect data types
+    const var1Type = detectDataType(dataset, selectedVar1);
+    const var2Type = detectDataType(dataset, selectedVar2);
+
+    // Create appropriate visualization
+    if (var1Type === 'numeric' && var2Type === 'numeric') {
+        createScatterPlot(selectedVar1, selectedVar2);
+    } else if (var1Type === 'numeric') {
+        createHistogram(selectedVar1);
+    } else {
+        createBarChart(selectedVar1);
+    }
+}
+
+// Data Type Detection
+function detectDataType(data, variable) {
+    const values = data.map(d => d[variable]);
+    const uniqueValues = new Set(values);
+    
+    // If there are few unique values, treat as categorical
+    if (uniqueValues.size <= 10) {
+        return 'categorical';
+    }
+    
+    // Check if values are numeric
+    const sampleSize = Math.min(10, values.length);
+    let numericCount = 0;
+    
     for (let i = 0; i < sampleSize; i++) {
-        const value = parseFloat(data[i][colName]);
-        if (!isNaN(value)) {
+        if (!isNaN(parseFloat(values[i])) && isFinite(values[i])) {
             numericCount++;
         }
     }
-
-    const ratio = numericCount / sampleSize;
-    return ratio > 0.6 ? 'numeric' : 'categorical';
+    
+    return numericCount / sampleSize > 0.6 ? 'numeric' : 'categorical';
 }
 
-/************************************************************
- *                 6. DRAW BAR CHART (CATEGORICAL)
- ************************************************************/
-function drawBarChart(column) {
-    // Count frequency of each category
+// Visualization Functions
+function createScatterPlot(xVar, yVar) {
+    const container = d3.select('#chart');
+    const width = container.node().getBoundingClientRect().width;
+    const height = chartHeight;
+
+    const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Create scales
+    const xScale = d3.scaleLinear()
+        .domain(d3.extent(dataset, d => +d[xVar]))
+        .range([0, width - margin.left - margin.right])
+        .nice();
+
+    const yScale = d3.scaleLinear()
+        .domain(d3.extent(dataset, d => +d[yVar]))
+        .range([height - margin.top - margin.bottom, 0])
+        .nice();
+
+    // Add axes
+    svg.append('g')
+        .attr('class', 'x-axis')
+        .attr('transform', `translate(0,${height - margin.top - margin.bottom})`)
+        .call(d3.axisBottom(xScale));
+
+    svg.append('g')
+        .attr('class', 'y-axis')
+        .call(d3.axisLeft(yScale));
+
+    // Add points
+    svg.selectAll('circle')
+        .data(dataset)
+        .enter()
+        .append('circle')
+        .attr('cx', d => xScale(+d[xVar]))
+        .attr('cy', d => yScale(+d[yVar]))
+        .attr('r', 5)
+        .attr('fill', COLORS.primary)
+        .attr('opacity', 0.7)
+        .on('mouseover', function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('r', 8)
+                .attr('fill', COLORS.hover);
+            
+            // Add tooltip
+            showTooltip(event, `${xVar}: ${d[xVar]}<br>${yVar}: ${d[yVar]}`);
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('r', 5)
+                .attr('fill', COLORS.primary);
+            
+            hideTooltip();
+        });
+
+    // Add labels
+    svg.append('text')
+        .attr('x', width / 2 - margin.left)
+        .attr('y', height - margin.bottom)
+        .attr('text-anchor', 'middle')
+        .text(xVar);
+
+    svg.append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -(height / 2) + margin.top)
+        .attr('y', -40)
+        .attr('text-anchor', 'middle')
+        .text(yVar);
+}
+
+// Tooltip Functions
+function showTooltip(event, text) {
+    const tooltip = d3.select('body').append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('background', 'white')
+        .style('padding', '8px')
+        .style('border-radius', '4px')
+        .style('box-shadow', '0 2px 4px rgba(0,0,0,0.1)')
+        .style('font-size', '12px')
+        .style('pointer-events', 'none')
+        .html(text);
+
+    tooltip.style('left', (event.pageX + 10) + 'px')
+        .style('top', (event.pageY - 10) + 'px');
+}
+
+function hideTooltip() {
+    d3.selectAll('.tooltip').remove();
+}
+
+// Error Handling
+function showErrorMessage(message) {
+    const container = d3.select('#chart');
+    container.html(`
+        <div class="error-message" style="
+            padding: 20px;
+            color: #e53e3e;
+            text-align: center;
+            background: #fff5f5;
+            border-radius: 8px;
+            margin: 20px;
+        ">
+            ${message}
+        </div>
+    `);
+}
+
+// Additional utility functions can be added here
+
+// Add createBarChart function
+function createBarChart(variable) {
+    const container = d3.select('#chart');
+    const width = container.node().getBoundingClientRect().width;
+    const height = chartHeight;
+
+    // Clear existing content
+    container.selectAll('*').remove();
+
+    // Process data
     const freqMap = {};
     dataset.forEach(d => {
-        const cat = d[column];
+        const cat = d[variable];
         freqMap[cat] = (freqMap[cat] || 0) + 1;
     });
 
-    // Convert freqMap to array of {category, count}
-    const dataArray = Object.keys(freqMap).map(k => {
-        return { category: k, count: freqMap[k] };
-    });
+    const barData = Object.entries(freqMap)
+        .map(([key, value]) => ({ category: key, count: value }))
+        .sort((a, b) => b.count - a.count);
 
-    // Create SVG
-    const svg = d3.select('#chart')
-        .append('svg')
-        .attr('width', chartWidth)
-        .attr('height', chartHeight);
+    const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
 
-    // Define scales
     if (orientation === 'vertical') {
-        const xScale = d3.scaleBand()
-            .domain(dataArray.map(d => d.category))
-            .range([margin.left, chartWidth - margin.right])
+        const x = d3.scaleBand()
+            .domain(barData.map(d => d.category))
+            .range([0, width - margin.left - margin.right])
             .padding(0.1);
 
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(dataArray, d => d.count)])
-            .range([chartHeight - margin.bottom, margin.top]);
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(barData, d => d.count)])
+            .range([height - margin.top - margin.bottom, 0]);
 
-        // Draw bars
-        svg.selectAll('.bar')
-            .data(dataArray)
+        // Add bars
+        svg.selectAll('rect')
+            .data(barData)
             .enter()
             .append('rect')
-            .attr('class', 'bar')
-            .attr('x', d => xScale(d.category))
-            .attr('y', d => yScale(d.count))
-            .attr('width', xScale.bandwidth())
-            .attr('height', d => (chartHeight - margin.bottom) - yScale(d.count))
-            .attr('fill', 'steelblue');
+            .attr('x', d => x(d.category))
+            .attr('y', d => y(d.count))
+            .attr('width', x.bandwidth())
+            .attr('height', d => height - margin.top - margin.bottom - y(d.count))
+            .attr('fill', COLORS.primary);
 
-        // X-axis
+        // Add axes
         svg.append('g')
-            .attr('transform', `translate(0, ${chartHeight - margin.bottom})`)
-            .call(d3.axisBottom(xScale))
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0,${height - margin.top - margin.bottom})`)
+            .call(d3.axisBottom(x))
             .selectAll('text')
             .attr('transform', 'rotate(-45)')
             .style('text-anchor', 'end');
 
-        // Y-axis
         svg.append('g')
-            .attr('transform', `translate(${margin.left},0)`)
-            .call(d3.axisLeft(yScale));
-
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(y));
     } else {
         // Horizontal orientation
-        const yScale = d3.scaleBand()
-            .domain(dataArray.map(d => d.category))
-            .range([margin.top, chartHeight - margin.bottom])
+        const y = d3.scaleBand()
+            .domain(barData.map(d => d.category))
+            .range([0, height - margin.top - margin.bottom])
             .padding(0.1);
 
-        const xScale = d3.scaleLinear()
-            .domain([0, d3.max(dataArray, d => d.count)])
-            .range([margin.left, chartWidth - margin.right]);
+        const x = d3.scaleLinear()
+            .domain([0, d3.max(barData, d => d.count)])
+            .range([0, width - margin.left - margin.right]);
 
-        // Draw bars
-        svg.selectAll('.bar')
-            .data(dataArray)
+        // Add bars
+        svg.selectAll('rect')
+            .data(barData)
             .enter()
             .append('rect')
-            .attr('class', 'bar')
-            .attr('y', d => yScale(d.category))
-            .attr('x', xScale(0))
-            .attr('height', yScale.bandwidth())
-            .attr('width', d => xScale(d.count) - margin.left)
-            .attr('fill', 'steelblue');
+            .attr('y', d => y(d.category))
+            .attr('x', 0)
+            .attr('height', y.bandwidth())
+            .attr('width', d => x(d.count))
+            .attr('fill', COLORS.primary);
 
-        // Y-axis
+        // Add axes
         svg.append('g')
-            .attr('transform', `translate(${margin.left}, 0)`)
-            .call(d3.axisLeft(yScale));
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(y));
 
-        // X-axis
         svg.append('g')
-            .attr('transform', `translate(0, ${chartHeight - margin.bottom})`)
-            .call(d3.axisBottom(xScale));
+            .attr('class', 'x-axis')
+            .attr('transform', `translate(0,${height - margin.top - margin.bottom})`)
+            .call(d3.axisBottom(x));
     }
-
-    // Add chart title
-    svg.append('text')
-        .attr('x', chartWidth / 2)
-        .attr('y', margin.top / 2)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
-        .text(`Bar Chart: ${column}`);
 }
 
-/************************************************************
- *                 7. DRAW HISTOGRAM (NUMERICAL)
- ************************************************************/
-function drawHistogram(column) {
-    // Convert the column data to numeric
-    const values = dataset.map(d => +d[column]).filter(d => !isNaN(d));
+// Add createHistogram function
+function createHistogram(variable) {
+    const container = d3.select('#chart');
+    const width = container.node().getBoundingClientRect().width;
+    const height = chartHeight;
 
-    // Create SVG
-    const svg = d3.select('#chart')
-        .append('svg')
-        .attr('width', chartWidth)
-        .attr('height', chartHeight);
+    // Clear existing content
+    container.selectAll('*').remove();
 
-    // Define X scale
-    const xScale = d3.scaleLinear()
-        .domain([d3.min(values), d3.max(values)])
-        .range([margin.left, chartWidth - margin.right]);
+    const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    // Process data
+    const values = dataset.map(d => +d[variable]).filter(d => !isNaN(d));
 
     // Create histogram bins
     const histogram = d3.histogram()
-        .domain(xScale.domain())
-        .thresholds(10);  // number of bins (can be adjusted)
+        .domain(d3.extent(values))
+        .thresholds(d3.thresholdScott)(values);
 
-    const bins = histogram(values);
+    // Create scales
+    const x = d3.scaleLinear()
+        .domain([histogram[0].x0, histogram[histogram.length - 1].x1])
+        .range([0, width - margin.left - margin.right]);
 
-    // Define Y scale
-    const yScale = d3.scaleLinear()
-        .domain([0, d3.max(bins, d => d.length)])
-        .range([chartHeight - margin.bottom, margin.top]);
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(histogram, d => d.length)])
+        .range([height - margin.top - margin.bottom, 0])
+        .nice();
 
-    // Decide orientation
-    if (orientation === 'vertical') {
-        // Vertical histogram
-        svg.selectAll('rect')
-            .data(bins)
-            .enter()
-            .append('rect')
-            .attr('x', d => xScale(d.x0))
-            .attr('y', d => yScale(d.length))
-            .attr('width', d => xScale(d.x1) - xScale(d.x0) - 1)
-            .attr('height', d => (chartHeight - margin.bottom) - yScale(d.length))
-            .attr('fill', 'orange');
-
-        // X-axis
-        svg.append('g')
-            .attr('transform', `translate(0, ${chartHeight - margin.bottom})`)
-            .call(d3.axisBottom(xScale));
-
-        // Y-axis
-        svg.append('g')
-            .attr('transform', `translate(${margin.left}, 0)`)
-            .call(d3.axisLeft(yScale));
-
-    } else {
-        // Horizontal histogram (bars going sideways)
-        // We'll treat the bin "length" as the X dimension
-        const xScaleHorizontal = d3.scaleLinear()
-            .domain([0, d3.max(bins, d => d.length)])
-            .range([margin.left, chartWidth - margin.right]);
-
-        // For Y, we need a scale for the bin index
-        const yScaleHorizontal = d3.scaleBand()
-            .domain(bins.map((_, i) => i))
-            .range([margin.top, chartHeight - margin.bottom])
-            .padding(0.1);
-
-        // Draw bars horizontally
-        svg.selectAll('rect')
-            .data(bins)
-            .enter()
-            .append('rect')
-            .attr('y', (d, i) => yScaleHorizontal(i))
-            .attr('x', margin.left)
-            .attr('width', d => xScaleHorizontal(d.length) - margin.left)
-            .attr('height', yScaleHorizontal.bandwidth())
-            .attr('fill', 'orange');
-
-        // Y-axis: each bin range label
-        const yAxisScale = d3.scaleBand()
-            .domain(bins.map(d => `${Math.round(d.x0)} - ${Math.round(d.x1)}`))
-            .range([margin.top, chartHeight - margin.bottom])
-            .padding(0.1);
-
-        svg.append('g')
-            .attr('transform', `translate(${margin.left}, 0)`)
-            .call(d3.axisLeft(yAxisScale));
-
-        // X-axis
-        svg.append('g')
-            .attr('transform', `translate(0, ${chartHeight - margin.bottom})`)
-            .call(d3.axisBottom(xScaleHorizontal));
-    }
-
-    // Add chart title
-    svg.append('text')
-        .attr('x', chartWidth / 2)
-        .attr('y', margin.top / 2)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
-        .text(`Histogram: ${column}`);
-}
-
-/************************************************************
- *                 8. DRAW SCATTERPLOT (NUM vs NUM)
- ************************************************************/
-function drawScatterPlot(var1, var2, axisOption) {
-    // Convert data to numeric
-    const points = dataset.map(d => ({
-        xVal: +d[var1],
-        yVal: +d[var2]
-    })).filter(d => !isNaN(d.xVal) && !isNaN(d.yVal));
-
-    // Decide which variable is X vs. Y based on radio button
-    let xLabel = var1;
-    let yLabel = var2;
-    if (axisOption === 'firstY') {
-        xLabel = var2;
-        yLabel = var1;
-        // Swap the values in points
-        points.forEach(pt => {
-            const temp = pt.xVal;
-            pt.xVal = pt.yVal;
-            pt.yVal = temp;
-        });
-    }
-
-    // Create SVG
-    const svg = d3.select('#chart')
-        .append('svg')
-        .attr('width', chartWidth)
-        .attr('height', chartHeight);
-
-    // X scale
-    const xScale = d3.scaleLinear()
-        .domain(d3.extent(points, d => d.xVal))
-        .range([margin.left, chartWidth - margin.right]);
-
-    // Y scale
-    const yScale = d3.scaleLinear()
-        .domain(d3.extent(points, d => d.yVal))
-        .range([chartHeight - margin.bottom, margin.top]);
-
-    // Plot circles
-    svg.selectAll('circle')
-        .data(points)
+    // Add bars
+    svg.selectAll('rect')
+        .data(histogram)
         .enter()
-        .append('circle')
-        .attr('cx', d => xScale(d.xVal))
-        .attr('cy', d => yScale(d.yVal))
-        .attr('r', 4)
-        .attr('fill', 'teal')
-        .attr('opacity', 0.7);
+        .append('rect')
+        .attr('x', d => x(d.x0))
+        .attr('y', d => y(d.length))
+        .attr('width', d => Math.max(0, x(d.x1) - x(d.x0) - 1))
+        .attr('height', d => height - margin.top - margin.bottom - y(d.length))
+        .attr('fill', COLORS.primary)
+        .on('mouseover', function(event, d) {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('fill', COLORS.hover);
+            
+            showTooltip(event, `Range: ${d.x0.toFixed(2)} - ${d.x1.toFixed(2)}<br>Count: ${d.length}`);
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .transition()
+                .duration(200)
+                .attr('fill', COLORS.primary);
+            
+            hideTooltip();
+        });
 
-    // X-axis
+    // Add axes
     svg.append('g')
-        .attr('transform', `translate(0, ${chartHeight - margin.bottom})`)
-        .call(d3.axisBottom(xScale));
+        .attr('class', 'x-axis')
+        .attr('transform', `translate(0,${height - margin.top - margin.bottom})`)
+        .call(d3.axisBottom(x));
 
-    // Y-axis
     svg.append('g')
-        .attr('transform', `translate(${margin.left}, 0)`)
-        .call(d3.axisLeft(yScale));
+        .attr('class', 'y-axis')
+        .call(d3.axisLeft(y));
 
-    // X-axis label
+    // Add labels
     svg.append('text')
-        .attr('x', chartWidth / 2)
-        .attr('y', chartHeight - 5)
+        .attr('x', width / 2 - margin.left)
+        .attr('y', height - margin.bottom / 3)
         .attr('text-anchor', 'middle')
-        .text(xLabel);
+        .text(variable);
 
-    // Y-axis label
     svg.append('text')
         .attr('transform', 'rotate(-90)')
-        .attr('x', -chartHeight / 2)
-        .attr('y', 15)
+        .attr('x', -(height / 2) + margin.top)
+        .attr('y', -40)
         .attr('text-anchor', 'middle')
-        .text(yLabel);
+        .text('Frequency');
+}
 
-    // Chart title
-    svg.append('text')
-        .attr('x', chartWidth / 2)
-        .attr('y', margin.top / 2)
-        .attr('text-anchor', 'middle')
-        .style('font-size', '16px')
-        .text(`Scatterplot: ${var1} vs. ${var2}`);
+// Add these new functions
+function initializeChartActions() {
+    const downloadBtn = document.getElementById('downloadChart');
+    const fullscreenBtn = document.getElementById('fullscreenChart');
+    
+    downloadBtn.addEventListener('click', () => {
+        const svg = document.querySelector('#chart svg');
+        if (svg) {
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+            const url = URL.createObjectURL(svgBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'chart.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    });
+    
+    fullscreenBtn.addEventListener('click', () => {
+        const chartContainer = document.querySelector('.dashboard-card');
+        if (chartContainer.requestFullscreen) {
+            chartContainer.requestFullscreen();
+        }
+    });
 }

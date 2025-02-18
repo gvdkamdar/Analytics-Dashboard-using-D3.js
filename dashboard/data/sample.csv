@@ -6,3 +6,11 @@ age,income,education,satisfaction
 39,55000,Masters,8
 52,75000,PhD,9
 33,40000,Bachelors,7
+
+category,value,region
+A,10,North
+B,20,South
+C,15,North
+D,25,South
+E,30,East
+F,18,West
