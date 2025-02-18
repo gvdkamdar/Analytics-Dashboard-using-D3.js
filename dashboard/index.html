@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Data-Agnostic D3 Dashboard</title>
+    <!-- Include D3 -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>D3.js Dashboard (Data-Agnostic)</h1>
+
+    <!-- Controls -->
+    <div class="controls">
+        <!-- Dropdown for primary variable selection -->
+        <label for="variableSelect">Select a variable:</label>
+        <select id="variableSelect"></select>
+
+        <!-- Dropdown for second variable (for scatterplot X or Y) -->
+        <label for="secondVariableSelect">Select second variable (for Scatterplot):</label>
+        <select id="secondVariableSelect"></select>
+
+        <!-- Radio buttons to choose which variable is X or Y in scatterplot -->
+        <span class="radio-group">
+            <label><input type="radio" name="axisOption" value="firstX" checked> First variable is X</label>
+            <label><input type="radio" name="axisOption" value="firstY"> First variable is Y</label>
+        </span>
+
+        <!-- Orientation toggle button (for bar/histogram) -->
+        <button class="toggle-button" id="orientationToggle">Toggle Orientation</button>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="chart-container" id="chart"></div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
