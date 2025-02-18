@@ -1,25 +1,391 @@
-/* Basic styling for container and controls */
+/* Base styles */
+:root {
+    --primary-blue: #3182ce;
+    --primary-light: #ebf8ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f7fafc;
+    --gray-200: #edf2f7;
+    --gray-300: #e2e8f0;
+    --gray-600: #4a5568;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --transition-speed: 0.2s;
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --border-radius: 8px;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--gray-50);
+    color: var(--gray-800);
 }
 
-.controls {
-    margin-bottom: 1em;
+/* Layout */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
 }
 
-.chart-container {
-    border: 1px solid #ccc;
-    padding: 10px;
-    display: inline-block;
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    background: white;
+    padding: var(--spacing-md);
+    border-right: 1px solid var(--gray-200);
+    position: fixed;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+    overflow-y: auto;
 }
 
-/* Toggle orientation button styling */
-.toggle-button {
-    margin: 0 0.5em;
+.logo {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: var(--spacing-md);
 }
 
-/* Radio buttons for scatterplot axis selection */
-.radio-group {
-    margin: 0 1em;
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.variable-controls {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+}
+
+.control-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.control-header h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.control-content {
+    padding: var(--spacing-sm);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    margin-left: 244px;
+    padding: var(--spacing-lg) var(--spacing-xl);
+    background: var(--gray-50);
+    min-height: 100vh;
+    overflow-y: auto;
+    width: calc(100vw - 240px - var(--spacing-xl) * 2.5);
+    box-sizing: border-box;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.header-left h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--gray-600);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.refresh-btn, .add-btn {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+}
+
+.refresh-btn {
+    background: white;
+    border: 1px solid var(--gray-200);
+    color: var(--gray-700);
+}
+
+.add-btn {
+    background: var(--primary-blue);
+    border: none;
+    color: white;
+}
+
+/* Controls */
+.controls-section {
+    margin-bottom: 24px;
+}
+
+.control-card, .chart-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.control-header, .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.badge {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: var(--gray-100);
+    border-radius: 4px;
+    color: var(--gray-600);
+}
+
+.card-content {
+    padding: var(--spacing-md);
+    height: calc(100% - 60px);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+    max-width: 100%;
+    height: calc(100vh - 120px);
+    margin-right: var(--spacing-md);
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    height: calc(100vh - 140px);
+    overflow: hidden;
+    position: relative;
+}
+
+.card-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.card-title h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--gray-600);
+    background: var(--gray-100);
+    padding: 2px var(--spacing-xs);
+    border-radius: 4px;
+}
+
+/* Form Controls */
+.select-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.select-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: var(--spacing-xs);
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.styled-select {
+    width: 100%;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    color: var(--gray-700);
+    background: white;
+    cursor: pointer;
+    appearance: none;
+}
+
+.select-arrow {
+    position: absolute;
+    right: var(--spacing-sm);
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--gray-600);
+}
+
+/* Action Buttons */
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.action-button {
+    padding: var(--spacing-sm);
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius);
+    font-size: 13px;
+    color: var(--gray-700);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+}
+
+.action-button:hover {
+    background: var(--gray-50);
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+/* Chart Styles */
+.chart-section {
+    margin-top: 24px;
+}
+
+#chart {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    padding: var(--spacing-md);
+    box-sizing: border-box;
+}
+
+/* Remove unused styles */
+.nav-items, .nav-item {
+    display: none;
+}
+
+/* Sidebar improvements */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.theme-toggle {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+    background: transparent;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: var(--transition-speed);
+}
+
+.theme-toggle:hover {
+    background: var(--gray-100);
+    color: var(--gray-800);
+}
+
+/* Responsive improvements */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+    }
+    
+    .main-content {
+        margin-left: 220px;
+        width: calc(100vw - 220px - var(--spacing-xl) * 2.5);
+        padding: var(--spacing-lg) var(--spacing-lg);
+    }
+    
+    .dashboard-grid {
+        gap: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: var(--spacing-md);
+        width: 100%;
+    }
+    
+    .dashboard-grid {
+        height: auto;
+        min-height: calc(100vh - 120px);
+        margin-right: 0;
+    }
+    
+    .dashboard-card {
+        height: 400px;
+    }
+    
+    #chart {
+        position: relative;
+        height: 100%;
+        padding: var(--spacing-sm);
+    }
+}
+
+/* Animation classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
