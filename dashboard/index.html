@@ -1,42 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <title>Data-Agnostic D3 Dashboard</title>
-    <!-- Include D3 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js Dashboard (Data-Agnostic)</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-
 <body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <h1 class="logo">Dashboard</h1>
+            
+            <div class="sidebar-content">
+                <div class="variable-controls">
+                    <div class="control-header">
+                        <h2>Variable Selection</h2>
+                        <span class="metric-label">Variables</span>
+                    </div>
+                    <div class="control-content">
+                        <div class="select-group">
+                            <label for="variableSelect">First Variable</label>
+                            <div class="select-wrapper">
+                                <select id="variableSelect" class="styled-select"></select>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                        </div>
+                        <div class="select-group">
+                            <label for="secondVariableSelect">Second Variable</label>
+                            <div class="select-wrapper">
+                                <select id="secondVariableSelect" class="styled-select"></select>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button id="flipAxes" class="action-button">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                                </svg>
+                                <span>Flip Axes</span>
+                            </button>
+                            <button id="flipOrientation" class="action-button">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 21v-7m0 0l3 3m-3-3l-3 3m19-3v7m0 0l3-3m-3 3l-3-3"/>
+                                </svg>
+                                <span>Flip Orientation</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
 
-    <h1>D3.js Dashboard (Data-Agnostic)</h1>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h1>Business Metrics</h1>
+                    <span class="subtitle">Data Visualization Dashboard</span>
+                </div>
+                <div class="header-actions">
+                    <button class="refresh-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Refresh data
+                    </button>
+                    <button class="add-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Add report
+                    </button>
+                </div>
+            </header>
 
-    <!-- Controls -->
-    <div class="controls">
-        <!-- Dropdown for primary variable selection -->
-        <label for="variableSelect">Select a variable:</label>
-        <select id="variableSelect"></select>
-
-        <!-- Dropdown for second variable (for scatterplot X or Y) -->
-        <label for="secondVariableSelect">Select second variable (for Scatterplot):</label>
-        <select id="secondVariableSelect"></select>
-
-        <!-- Radio buttons to choose which variable is X or Y in scatterplot -->
-        <span class="radio-group">
-            <label><input type="radio" name="axisOption" value="firstX" checked> First variable is X</label>
-            <label><input type="radio" name="axisOption" value="firstY"> First variable is Y</label>
-        </span>
-
-        <!-- Orientation toggle button (for bar/histogram) -->
-        <button class="toggle-button" id="orientationToggle">Toggle Orientation</button>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <h2>Data Visualization</h2>
+                            <span class="metric-label">Chart</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn" id="downloadChart">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                                </svg>
+                            </button>
+                            <button class="card-action-btn" id="fullscreenChart">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="chart" class="card-content"></div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <!-- Chart Container -->
-    <div class="chart-container" id="chart"></div>
-
     <script src="dashboard.js"></script>
 </body>
-
 </html>
