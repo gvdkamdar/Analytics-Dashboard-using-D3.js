@@ -841,3 +841,48 @@ circle.point:hover {
     display: inline-block;
     margin-right: 8px;
 }
+
+/* Upload Section Styles */
+.upload-section {
+    padding: var(--spacing-md);
+}
+
+.upload-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--cream);
+    color: var(--charcoal);
+}
+
+.upload-label:hover {
+    border-color: var(--teal);
+    background: var(--beige);
+}
+
+.upload-label svg {
+    color: var(--teal);
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-status {
+    margin-top: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.upload-success {
+    color: var(--teal);
+}
+
+.upload-error {
+    color: #ef4444;
+}

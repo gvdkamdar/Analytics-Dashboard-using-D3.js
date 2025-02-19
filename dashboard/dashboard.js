@@ -531,9 +531,74 @@ function setupEventListeners() {
     });
 }
 
+// Add this to your existing code
+function setupFileUpload() {
+    const fileInput = document.getElementById('csvFileUpload');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            uploadStatus.textContent = 'Reading file...';
+            uploadStatus.className = 'upload-status';
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    Papa.parse(event.target.result, {
+                        header: true,
+                        dynamicTyping: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            if (results.data && results.data.length > 0) {
+                                // Update state with new data
+                                state.fullData = results.data;
+                                state.currentData = results.data;
+                                state.scatterData = results.data;
+
+                                // Process numeric columns
+                                state.fullData.forEach(d => {
+                                    for (let key in d) {
+                                        if (typeof d[key] === 'string' && !isNaN(d[key])) {
+                                            d[key] = parseFloat(d[key]);
+                                        }
+                                    }
+                                });
+
+                                // Reinitialize visualizations
+                                populateSelectOptions();
+                                drawBarHistChart();
+                                drawScatterPlot();
+
+                                uploadStatus.textContent = 'File uploaded successfully!';
+                                uploadStatus.className = 'upload-status upload-success';
+                            }
+                        },
+                        error: function(error) {
+                            uploadStatus.textContent = 'Error parsing CSV: ' + error.message;
+                            uploadStatus.className = 'upload-status upload-error';
+                        }
+                    });
+                } catch (error) {
+                    uploadStatus.textContent = 'Error reading file: ' + error.message;
+                    uploadStatus.className = 'upload-status upload-error';
+                }
+            };
+
+            reader.onerror = function() {
+                uploadStatus.textContent = 'Error reading file!';
+                uploadStatus.className = 'upload-status upload-error';
+            };
+
+            reader.readAsText(file);
+        }
+    });
+}
+
 // Initialize dashboard
 function init() {
     setupEventListeners();
+    setupFileUpload();
     updateChartDimensions();
     loadData();
 }
