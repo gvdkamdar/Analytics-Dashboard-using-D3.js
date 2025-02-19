@@ -125,7 +125,8 @@ body {
     gap: var(--spacing-sm);
 }
 
-.refresh-btn, .add-btn {
+.refresh-btn,
+.add-btn {
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius);
     font-size: 13px;
@@ -153,14 +154,16 @@ body {
     margin-bottom: 24px;
 }
 
-.control-card, .chart-card {
+.control-card,
+.chart-card {
     background: white;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
-.control-header, .chart-header {
+.control-header,
+.chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -308,7 +311,8 @@ body {
 }
 
 /* Remove unused styles */
-.nav-items, .nav-item {
+.nav-items,
+.nav-item {
     display: none;
 }
 
@@ -340,13 +344,13 @@ body {
     .sidebar {
         width: 220px;
     }
-    
+
     .main-content {
         margin-left: 220px;
         width: calc(100vw - 220px - var(--spacing-xl) * 2.5);
         padding: var(--spacing-lg) var(--spacing-lg);
     }
-    
+
     .dashboard-grid {
         gap: var(--spacing-lg);
     }
@@ -356,23 +360,23 @@ body {
     .sidebar {
         display: none;
     }
-    
+
     .main-content {
         margin-left: 0;
         padding: var(--spacing-md);
         width: 100%;
     }
-    
+
     .dashboard-grid {
         height: auto;
         min-height: calc(100vh - 120px);
         margin-right: 0;
     }
-    
+
     .dashboard-card {
         height: 400px;
     }
-    
+
     #chart {
         position: relative;
         height: 100%;
@@ -386,6 +390,13 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
