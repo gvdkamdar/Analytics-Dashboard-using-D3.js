@@ -1,19 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D3.js Dashboard (Data-Agnostic)</title>
+    <!-- Use D3 v7 for CSV loading and chart drawing -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <!-- Your existing CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="dashboard-layout">
         <!-- Sidebar -->
         <nav class="sidebar">
             <h1 class="logo">Dashboard</h1>
-            
+
             <div class="sidebar-content">
                 <div class="variable-controls">
                     <div class="control-header">
@@ -37,14 +44,16 @@
                         </div>
                         <div class="button-group">
                             <button id="flipAxes" class="action-button">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
                                 </svg>
                                 <span>Flip Axes</span>
                             </button>
                             <button id="flipOrientation" class="action-button">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M4 21v-7m0 0l3 3m-3-3l-3 3m19-3v7m0 0l3-3m-3 3l-3-3"/>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M4 21v-7m0 0l3 3m-3-3l-3 3m19-3v7m0 0l3-3m-3 3l-3-3" />
                                 </svg>
                                 <span>Flip Orientation</span>
                             </button>
@@ -58,23 +67,11 @@
         <main class="main-content">
             <header class="dashboard-header">
                 <div class="header-left">
-                    <h1>Business Metrics</h1>
-                    <span class="subtitle">Data Visualization Dashboard</span>
+                    <h1>Histograms, Bar Charts & Scatter Plots</h1>
+                    <span class="subtitle">Selecting 1 variable generates a Bar Chart or Histogram; selecting 2
+                        variables creates a Scatter Plot.</span>
                 </div>
-                <div class="header-actions">
-                    <button class="refresh-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-                        </svg>
-                        Refresh data
-                    </button>
-                    <button class="add-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Add report
-                    </button>
-                </div>
+                <!-- Removed refresh/add buttons from header -->
             </header>
 
             <div class="dashboard-grid">
@@ -84,24 +81,17 @@
                             <h2>Data Visualization</h2>
                             <span class="metric-label">Chart</span>
                         </div>
-                        <div class="card-actions">
-                            <button class="card-action-btn" id="downloadChart">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-                                </svg>
-                            </button>
-                            <button class="card-action-btn" id="fullscreenChart">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                                </svg>
-                            </button>
-                        </div>
+                        <!-- Removed download/fullscreen buttons -->
                     </div>
+                    <!-- Chart container -->
                     <div id="chart" class="card-content"></div>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- Your updated dashboard logic -->
     <script src="dashboard.js"></script>
 </body>
+
 </html>
