@@ -813,3 +813,31 @@ circle.point:hover {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-md);
 }
+
+/* Flip orientation button styling */
+#barHistFlipOrientation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+#barHistFlipOrientation svg {
+    width: 20px;  /* Increased from default */
+    height: 20px; /* Increased from default */
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+}
+
+#barHistFlipOrientation:hover svg {
+    transform: rotate(270deg);
+}
+
+/* Flip icon */
+.flip-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 8px;
+}
