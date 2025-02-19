@@ -578,8 +578,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .axis text {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    fill: var(--text-secondary);
+    font-size: 11px;
 }
 
 /* Scatter Plot Specific Styles */
@@ -720,7 +720,7 @@ circle.point:hover {
 /* Axis styling */
 .axis text {
     fill: var(--text-secondary);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .axis line, .axis path {
@@ -744,12 +744,13 @@ circle.point:hover {
     text-anchor: end;
     transform: rotate(-45deg);
     transform-origin: right;
-    padding: 8px;
+    dx: -0.5em;
+    dy: 0.15em;
 }
 
-.y-label {
-    transform: rotate(-90deg);
-    text-anchor: middle;
+.y-axis text {
+    text-anchor: end;
+    dx: -0.5em;
 }
 
 .x-label {
@@ -886,3 +887,10 @@ circle.point:hover {
 .upload-error {
     color: #ef4444;
 }
+
+/* Adjust chart margins */
+.chart-container {
+    margin: var(--spacing-lg) var(--spacing-xl);
+}
+
+/* Update bar chart function in JavaScript */

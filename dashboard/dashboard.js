@@ -137,7 +137,12 @@ function drawBarChart(container, data, varName, orientation = state.orientation)
     })).sort((a, b) => b.count - a.count);
 
     // Get dimensions
-    const margin = state.chartDimensions.margin;
+    const margin = {
+        top: 40,
+        right: 40,
+        bottom: 80,  // Increased to accommodate rotated labels
+        left: 60
+    };
     const width = state.chartDimensions.width - margin.left - margin.right;
     const height = state.chartDimensions.height - margin.top - margin.bottom;
 
@@ -176,16 +181,23 @@ function drawBarChart(container, data, varName, orientation = state.orientation)
             .attr('y', d => yScale(d.count))
             .attr('height', d => height - yScale(d.count));
 
-        // Update x-axis text
+        // Update x-axis
         g.append('g')
             .attr('class', 'x-axis')
             .attr('transform', `translate(0,${height})`)
             .call(d3.axisBottom(xScale))
             .selectAll('text')
-            .attr('transform', 'rotate(-45)')
-            .attr('dx', '-0.5em')
-            .attr('dy', '0.5em')
-            .style('text-anchor', 'end');
+            .style('text-anchor', 'end')
+            .attr('dx', '-.8em')
+            .attr('dy', '.15em')
+            .attr('transform', 'rotate(-45)');
+
+        // Update y-axis
+        g.append('g')
+            .attr('class', 'y-axis')
+            .call(d3.axisLeft(yScale))
+            .selectAll('text')
+            .attr('dx', '-.5em');
 
         // Add axis labels
         g.append('text')
