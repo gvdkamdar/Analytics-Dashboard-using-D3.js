@@ -453,7 +453,31 @@ function updateChartDimensions() {
     }
 }
 
-// Event listeners
+// Add this function for chart download
+function downloadChart(chartId) {
+    const svg = document.querySelector(`#${chartId} svg`);
+    if (!svg) {
+        console.error('No chart to download');
+        return;
+    }
+
+    // Get SVG data
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+    
+    // Create download link
+    const downloadLink = document.createElement('a');
+    downloadLink.href = URL.createObjectURL(svgBlob);
+    downloadLink.download = `${chartId}_${new Date().toISOString()}.svg`;
+    
+    // Trigger download
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(downloadLink.href);
+}
+
+// Update event listeners
 function setupEventListeners() {
     // Bar/Histogram controls
     document.getElementById('barHistSelect').addEventListener('change', drawBarHistChart);
@@ -481,6 +505,29 @@ function setupEventListeners() {
         updateChartDimensions();
         drawBarHistChart();
         drawScatterPlot();
+    });
+
+    // Add refresh button listeners
+    document.querySelectorAll('.card-action-btn').forEach(btn => {
+        if (btn.title === 'Download Chart') {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.dashboard-card');
+                const chartId = card.querySelector('.card-content').id;
+                downloadChart(chartId);
+            });
+        } else if (btn.title === 'Refresh') {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.dashboard-card');
+                const chartId = card.querySelector('.card-content').id;
+                
+                // Refresh appropriate chart
+                if (chartId === 'barHistChart') {
+                    drawBarHistChart();
+                } else if (chartId === 'scatterPlotChart') {
+                    drawScatterPlot();
+                }
+            });
+        }
     });
 }
 
